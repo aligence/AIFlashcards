@@ -105,8 +105,7 @@ export default function Generate(){
                                                     height: '200px',
                                                     boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
                                                     transform: flipped[index]? 'rotateY(180deg)' : 'rotateY(0deg)',
-                                                },
-                                                
+                                                    },
                                                 }}>
                                                 <div>
                                                     <div>
