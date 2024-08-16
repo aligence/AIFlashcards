@@ -1,5 +1,6 @@
+"use server"
 import {NextResponse} from 'next/server'
-import OpenAI from 'openai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
 const systemPrompt = `
 You are a flashcard creator. Your task is to geenrate concise and effective flashcards based on the given topic or content. Follow these guidelines
@@ -26,20 +27,19 @@ Return in the following JSON format
     }]
 }
 `
+
+const generativeAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY as string);
+const model = generativeAI.getGenerativeModel({model: 'gemini-1.5-flash'});
+
 export async function POST(req){
-    const openai = new OpenAI()
     const data = await req.text()
-
-    const completion = await openai.chat.completions.create({
-        messages: [
-            {role: 'system', content: systemPrompt},
-            {role: 'user', content: data},
-        ],
-        model: 'gpt-4o',
-        response_format: {type: 'json_object'},
-    })
-
-    const flashcards = JSON.parse(completion.choices[0].message.content)
-
-    return NextResponse.json(flashcards.flashcard)
+    const prompt = systemPrompt + "the topic is:" + data
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text()
+    const flashcards = JSON.parse(text)
+    
+   return NextResponse.json(flashcards)
+   
+    
 }
