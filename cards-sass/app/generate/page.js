@@ -1,6 +1,6 @@
 "use client"
 import {useUser} from '@clerk/nextjs'
-import { doc, getDoc, writeBatch } from 'firebase/firestore'
+import { doc, getDoc, writeBatch, collection, setDoc } from 'firebase/firestore'
 import {useRouter} from 'next/navigation'
 import { db } from '../../firebase'
 import { Box, Container, Paper, TextField, Typography, Button, Grid, CardActionArea, Card, CardContent, ButtonGroupButtonContext, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material'
@@ -46,7 +46,7 @@ export default function Generate(){
         }
 
         const batch = writeBatch(db)
-        const userDocRef = doc(collection(db, 'users'), doc.id)
+        const userDocRef = doc(collection(db, 'users'), user.id)
         const docSnap = await getDoc(userDocRef)
 
         if (docSnap.exists()) {
@@ -65,15 +65,15 @@ export default function Generate(){
         }
 
         const colRef = collection(userDocRef, name)
-        flashcards.array.forEach((flashcard) => {
+        flashcards.forEach((flashcard) => {
             const cardDocRef = doc(colRef)
             batch.set(cardDocRef, flashcard)
         });
 
         await batch.commit()
-        handleClose(
-            router.push('/flashcards')
-        )
+        handleClose()
+        router.push('/flashcards')
+        
     }
 
     return (
@@ -93,7 +93,7 @@ export default function Generate(){
                         {flashcards.map((flashcard, index) =>(
                             <Grid item xs = {12} sm = {6} md= {4} key = {index}>
                                 <Card>
-                                    <CardActionArea onClick={handleCardClick(index)}>
+                                    <CardActionArea onClick={() => {handleCardClick(index)}}>
                                         <CardContent>
                                             <Box sx={{
                                                 perspective: '1000px',

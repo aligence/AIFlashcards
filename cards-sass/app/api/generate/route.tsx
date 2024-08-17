@@ -21,25 +21,36 @@ Remeber the goal is to facilitate effective learning and retention of informatio
 
 Return in the following JSON format
 {
-    "flashcards": [{
-        "front" : str,
-        "back": str
-    }]
+    "flashcards": [
+        {
+            "front" : str,
+            "back": str
+        }
+    ]
 }
+ no backticks
 `
 
 const generativeAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY as string);
-const model = generativeAI.getGenerativeModel({model: 'gemini-1.5-flash'});
+const model = generativeAI.getGenerativeModel({model: 'gemini-1.5-flash', generationConfig: { responseMimeType: "application/json"}});
 
 export async function POST(req){
     const data = await req.text()
-    const prompt = systemPrompt + "the topic is:" + data
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent({
+        contents:[
+            {
+                role: 'model',
+                parts: [{text: systemPrompt}]
+            },
+            {
+                role: 'user',
+                parts: [{text: data}]
+            }
+        ]
+    });
     const response = await result.response;
     const text = response.text()
     const flashcards = JSON.parse(text)
-    
-   return NextResponse.json(flashcards)
-   
-    
+
+    return NextResponse.json(flashcards.flashcards)
 }
